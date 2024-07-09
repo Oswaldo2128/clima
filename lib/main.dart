@@ -60,7 +60,6 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   Map<String, dynamic>? weatherData;
   bool isLoading = true;
-  String _locationMessage = "";
 
   void _onItemTapped(int index) {
     setState(() {
@@ -99,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       setState(() {
-        _locationMessage = 'El servicio de ubicación está deshabilitado.';
+        throw Exception('El servicio de ubicación está deshabilitado.');
       });
       return [];
     }
@@ -109,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         setState(() {
-          _locationMessage = 'Los permisos de ubicación están denegados.';
+          throw Exception('Los permisos de ubicación están denegados.');
         });
         return [];
       }
@@ -117,8 +116,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (permission == LocationPermission.deniedForever) {
       setState(() {
-        _locationMessage =
-            'Los permisos de ubicación están denegados permanentemente.';
+        throw Exception(
+            'Los permisos de ubicación están denegados permanentemente.');
       });
       return [];
     }
@@ -132,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> widgetOptions = <Widget>[
-      Home(weatherData: weatherData, locationMessage: _locationMessage),
+      Home(weatherData: weatherData),
       const Forecast(),
       const Search(),
       const Configurations()
@@ -174,16 +173,14 @@ class AppBarTitle extends StatelessWidget {
 
 class Home extends StatelessWidget {
   final Map<String, dynamic>? weatherData;
-  final String locationMessage;
 
-  const Home({super.key, this.weatherData, required this.locationMessage});
+  const Home({super.key, this.weatherData});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Text(locationMessage),
         Text('Temperatura: ${weatherData?['main']['temp'] ?? 'Cargando...'}°C'),
         Text(
             'Clima: ${weatherData?['weather'][0]['description'] ?? 'Cargando...'}'),
