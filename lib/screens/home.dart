@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class Home extends StatelessWidget {
   final Map<String, dynamic>? weatherData;
@@ -7,13 +8,32 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('MMM d, hh:mma').format(now);
+    String? desc =
+        toBeginningOfSentenceCase(weatherData?['weather']?[0]['description']);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Text('Temperatura: ${weatherData?['main']['temp'] ?? 'Cargando...'}°C'),
+        Text(formattedDate),
+        Text(desc ?? 'Cargando...'),
+        weatherData?['weather']?[0]['icon'] != null
+            ? Image.network(
+                'https://openweathermap.org/img/wn/${weatherData?['weather'][0]['icon']}@2x.png')
+            : const Text('Cargando...'),
+        Text('${weatherData?['main']['temp'] ?? 'Cargando...'} °C'),
         Text(
-            'Clima: ${weatherData?['weather'][0]['description'] ?? 'Cargando...'}'),
-        Text('Humedad: ${weatherData?['main']['humidity'] ?? 'Cargando...'}%'),
+            'Sensación térmica: ${weatherData?['main']['feels_like'] ?? 'Cargando...'} °C'),
+        Text(
+            'Presión: ${weatherData?['main']['pressure'] ?? 'Cargando...'} hPa'),
+        Text('Humedad: ${weatherData?['main']['humidity'] ?? 'Cargando...'} %'),
+        Text(
+            'Visibilidad: ${weatherData?['visibility'] / 1000 ?? 'Cargando...'} km'),
+        Text(
+            'Velocidad: ${weatherData?['wind']['speed'] ?? 'Cargando...'} m/s'),
+        Text('País: ${weatherData?['sys']['country'] ?? 'Cargando...'}'),
+        Text('Ciudad: ${weatherData?['name'] ?? 'Cargando...'}'),
       ],
     );
   }
