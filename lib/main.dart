@@ -20,7 +20,7 @@ Future<Map<String, dynamic>> _getWeatherCurrent(double lat, double lon) async {
   }
 }
 
-Future<Map<String, dynamic>> getWeatherOfCity(String cityName) async {
+Future<Map<String, dynamic>> _getWeatherOfCity(String cityName) async {
   final url =
       'http://api.openweathermap.org/data/2.5/weather?q=$cityName&appid=$apiKey&units=metric';
 
@@ -71,36 +71,37 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _fetchWeatherData();
+  }
 
-    _getCurrentLocation().then((data) {
-      _getWeatherCurrent(data[0], data[1]).then((weatherData) {
+  Future<void> _fetchWeatherData() async {
+    try {
+      List<double> data = await _getCurrentLocation();
+      if (data.isNotEmpty) {
+        Map<String, dynamic> weather =
+            await _getWeatherCurrent(data[0], data[1]);
         setState(() {
-          this.weatherData = weatherData;
+          weatherData = weather;
           isLoading = false;
         });
-      }).catchError((error) {
-        setState(() {
-          isLoading = false;
-        });
-      });
-    }).catchError((error) {
+      }
+    } catch (error) {
       setState(() {
         isLoading = false;
       });
-    });
+    }
   }
 
   Future<List<double>> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
-    List<double> location = [];
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       setState(() {
         _locationMessage = 'El servicio de ubicación está deshabilitado.';
       });
-      return location;
+      return [];
     }
 
     permission = await Geolocator.checkPermission();
@@ -110,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           _locationMessage = 'Los permisos de ubicación están denegados.';
         });
-        return location;
+        return [];
       }
     }
 
@@ -119,13 +120,13 @@ class _MyHomePageState extends State<MyHomePage> {
         _locationMessage =
             'Los permisos de ubicación están denegados permanentemente.';
       });
-      return location;
+      return [];
     }
 
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
-    return location = [position.latitude, position.longitude];
+    return [position.latitude, position.longitude];
   }
 
   @override
@@ -142,7 +143,9 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const AppBarTitle(),
       ),
       body: Center(
-        child: widgetOptions[_selectedIndex],
+        child: isLoading
+            ? const CircularProgressIndicator()
+            : widgetOptions[_selectedIndex],
       ),
       drawer: Navigation(
           selectedIndex: _selectedIndex, onItemTapped: _onItemTapped),
@@ -195,10 +198,8 @@ class Forecast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: <Widget>[
-        Text('Index 1: Forecast'),
-      ],
+    return const Center(
+      child: Text('Index 1: Forecast'),
     );
   }
 }
@@ -208,10 +209,8 @@ class Search extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: <Widget>[
-        Text('Index 2: Search'),
-      ],
+    return const Center(
+      child: Text('Index 2: Search'),
     );
   }
 }
@@ -221,10 +220,8 @@ class Configurations extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: <Widget>[
-        Text('Index 3: Configurations'),
-      ],
+    return const Center(
+      child: Text('Index 3: Configurations'),
     );
   }
 }
