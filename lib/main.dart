@@ -7,7 +7,7 @@ const apiKey = '1142a9567150c9e455cd4f5ba89953a6';
 
 void main() => runApp(const MyApp());
 
-Future<Map<String, dynamic>?> _getWeatherCurrent(
+Future<Map<String, dynamic>?> getWeatherCurrent(
     double lat, double lon, BuildContext context) async {
   final url =
       'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric';
@@ -17,12 +17,12 @@ Future<Map<String, dynamic>?> _getWeatherCurrent(
   if (response.statusCode == 200) {
     return json.decode(response.body);
   } else {
-    _sendMessage('Error al cargar el clima', context);
+    showErrorDialog('Error al cargar el clima', context);
     return null;
   }
 }
 
-Future<Map<String, dynamic>?> _getWeatherOfCity(
+Future<Map<String, dynamic>?> getWeatherOfCity(
     String cityName, BuildContext context) async {
   final url =
       'http://api.openweathermap.org/data/2.5/weather?q=$cityName&appid=$apiKey&units=metric';
@@ -32,12 +32,12 @@ Future<Map<String, dynamic>?> _getWeatherOfCity(
   if (response.statusCode == 200) {
     return json.decode(response.body);
   } else {
-    _sendMessage('Error al cargar el clima', context);
+    showErrorDialog('Error al cargar el clima', context);
     return null;
   }
 }
 
-void _sendMessage(String message, BuildContext context) {
+void showErrorDialog(String message, BuildContext context) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -102,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
       List<double> data = await _getCurrentLocation(context);
       if (data.isNotEmpty) {
         Map<String, dynamic>? weather =
-            await _getWeatherCurrent(data[0], data[1], context);
+            await getWeatherCurrent(data[0], data[1], context);
         setState(() {
           weatherData = weather;
           isLoading = false;
@@ -121,9 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      setState(() {
-        _sendMessage('El servicio de ubicación está deshabilitado.', context);
-      });
+      showErrorDialog('El servicio de ubicación está deshabilitado.', context);
       return [];
     }
 
@@ -131,19 +129,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        setState(() {
-          _sendMessage('Los permisos de ubicación están denegados.', context);
-        });
+        showErrorDialog('Los permisos de ubicación están denegados.', context);
         return [];
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        _sendMessage(
-            'Los permisos de ubicación están denegados permanentemente.',
-            context);
-      });
+      showErrorDialog(
+          'Los permisos de ubicación están denegados permanentemente.',
+          context);
       return [];
     }
 
