@@ -7,7 +7,8 @@ const apiKey = '1142a9567150c9e455cd4f5ba89953a6';
 
 void main() => runApp(const MyApp());
 
-Future<Map<String, dynamic>> _getWeatherCurrent(double lat, double lon) async {
+Future<Map<String, dynamic>?> _getWeatherCurrent(
+    double lat, double lon, BuildContext context) async {
   final url =
       'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric';
 
@@ -16,11 +17,13 @@ Future<Map<String, dynamic>> _getWeatherCurrent(double lat, double lon) async {
   if (response.statusCode == 200) {
     return json.decode(response.body);
   } else {
-    throw Exception('Error al cargar el clima');
+    _sendMessage('Error al cargar el clima', context);
+    return null;
   }
 }
 
-Future<Map<String, dynamic>> _getWeatherOfCity(String cityName) async {
+Future<Map<String, dynamic>?> _getWeatherOfCity(
+    String cityName, BuildContext context) async {
   final url =
       'http://api.openweathermap.org/data/2.5/weather?q=$cityName&appid=$apiKey&units=metric';
 
@@ -29,8 +32,29 @@ Future<Map<String, dynamic>> _getWeatherOfCity(String cityName) async {
   if (response.statusCode == 200) {
     return json.decode(response.body);
   } else {
-    throw Exception('Error al cargar el clima');
+    _sendMessage('Error al cargar el clima', context);
+    return null;
   }
+}
+
+void _sendMessage(String message, BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Alerta'),
+        content: Text('$message'),
+        actions: <Widget>[
+          TextButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -61,24 +85,24 @@ class _MyHomePageState extends State<MyHomePage> {
   Map<String, dynamic>? weatherData;
   bool isLoading = true;
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchWeatherData(context);
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchWeatherData();
-  }
-
-  Future<void> _fetchWeatherData() async {
+  Future<void> _fetchWeatherData(BuildContext context) async {
     try {
-      List<double> data = await _getCurrentLocation();
+      List<double> data = await _getCurrentLocation(context);
       if (data.isNotEmpty) {
-        Map<String, dynamic> weather =
-            await _getWeatherCurrent(data[0], data[1]);
+        Map<String, dynamic>? weather =
+            await _getWeatherCurrent(data[0], data[1], context);
         setState(() {
           weatherData = weather;
           isLoading = false;
@@ -91,14 +115,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<List<double>> _getCurrentLocation() async {
+  Future<List<double>> _getCurrentLocation(BuildContext context) async {
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       setState(() {
-        throw Exception('El servicio de ubicación está deshabilitado.');
+        _sendMessage('El servicio de ubicación está deshabilitado.', context);
       });
       return [];
     }
@@ -108,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         setState(() {
-          throw Exception('Los permisos de ubicación están denegados.');
+          _sendMessage('Los permisos de ubicación están denegados.', context);
         });
         return [];
       }
@@ -116,8 +140,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (permission == LocationPermission.deniedForever) {
       setState(() {
-        throw Exception(
-            'Los permisos de ubicación están denegados permanentemente.');
+        _sendMessage(
+            'Los permisos de ubicación están denegados permanentemente.',
+            context);
       });
       return [];
     }
@@ -133,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final List<Widget> widgetOptions = <Widget>[
       Home(weatherData: weatherData),
       const Forecast(),
-      const Search(),
+      Search(),
       const Configurations()
     ];
 
@@ -201,13 +226,51 @@ class Forecast extends StatelessWidget {
   }
 }
 
-class Search extends StatelessWidget {
-  const Search({super.key});
+class Search extends StatefulWidget {
+  const Search({Key? key}) : super(key: key);
+
+  @override
+  _SearchState createState() => _SearchState();
+}
+
+class _SearchState extends State<Search> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Index 2: Search'),
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          const Text('Index 2: Search'),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 30.0),
+            child: TextFormField(
+              decoration: const InputDecoration(
+                hintText: 'Ingresa el nombre de la ciudad',
+              ),
+              validator: (String? value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingrese el nombre de la ciudad';
+                }
+                return null;
+              },
+            ),
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
+            child: ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {}
+              },
+              child: const Text('Buscar'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
