@@ -7,8 +7,7 @@ const apiKey = '1142a9567150c9e455cd4f5ba89953a6';
 
 void main() => runApp(const MyApp());
 
-Future<Map<String, dynamic>?> getWeatherCurrent(
-    double lat, double lon, BuildContext context) async {
+Future<Map<String, dynamic>?> getWeatherCurrent(double lat, double lon) async {
   final url =
       'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric';
 
@@ -17,13 +16,11 @@ Future<Map<String, dynamic>?> getWeatherCurrent(
   if (response.statusCode == 200) {
     return json.decode(response.body);
   } else {
-    showErrorDialog('Error al cargar el clima', context);
-    return null;
+    throw Exception('Error al cargar el clima');
   }
 }
 
-Future<Map<String, dynamic>?> getWeatherOfCity(
-    String cityName, BuildContext context) async {
+Future<Map<String, dynamic>?> getWeatherOfCity(String cityName) async {
   final url =
       'http://api.openweathermap.org/data/2.5/weather?q=$cityName&appid=$apiKey&units=metric';
 
@@ -32,29 +29,8 @@ Future<Map<String, dynamic>?> getWeatherOfCity(
   if (response.statusCode == 200) {
     return json.decode(response.body);
   } else {
-    showErrorDialog('Error al cargar el clima', context);
-    return null;
+    throw Exception('Error al cargar el clima');
   }
-}
-
-void showErrorDialog(String message, BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Alerta'),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
 }
 
 class MyApp extends StatelessWidget {
@@ -88,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _fetchWeatherData(context);
+    _fetchWeatherData();
   }
 
   void _onItemTapped(int index) {
@@ -97,48 +73,65 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<void> _fetchWeatherData(BuildContext context) async {
+  Future<void> _fetchWeatherData() async {
     try {
-      List<double> data = await _getCurrentLocation(context);
+      List<double> data = await _getCurrentLocation();
       if (data.isNotEmpty) {
         Map<String, dynamic>? weather =
-            await getWeatherCurrent(data[0], data[1], context);
-        setState(() {
-          weatherData = weather;
-          isLoading = false;
-        });
+            await getWeatherCurrent(data[0], data[1]);
+        if (mounted) {
+          setState(() {
+            weatherData = weather;
+            isLoading = false;
+          });
+        }
       }
     } catch (error) {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Alerta"),
+                content: const Text("Error, intente mas tarde"),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        });
+      }
     }
   }
 
-  Future<List<double>> _getCurrentLocation(BuildContext context) async {
+  Future<List<double>> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      showErrorDialog('El servicio de ubicación está deshabilitado.', context);
-      return [];
+      throw Exception('El servicio de ubicación está deshabilitado.');
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        showErrorDialog('Los permisos de ubicación están denegados.', context);
-        return [];
+        throw Exception('Los permisos de ubicación están denegados.');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      showErrorDialog(
-          'Los permisos de ubicación están denegados permanentemente.',
-          context);
-      return [];
+      throw Exception(
+          'Los permisos de ubicación están denegados permanentemente.');
     }
 
     Position position = await Geolocator.getCurrentPosition(
