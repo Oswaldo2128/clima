@@ -42,11 +42,11 @@ void _sendMessage(String message, BuildContext context) {
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Alerta'),
-        content: Text('$message'),
+        title: const Text('Alerta'),
+        content: Text(message),
         actions: <Widget>[
           TextButton(
-            child: Text('OK'),
+            child: const Text('OK'),
             onPressed: () {
               Navigator.of(context).pop();
             },
@@ -158,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final List<Widget> widgetOptions = <Widget>[
       Home(weatherData: weatherData),
       const Forecast(),
-      Search(),
+      const Search(),
       const Configurations()
     ];
 
@@ -227,10 +227,10 @@ class Forecast extends StatelessWidget {
 }
 
 class Search extends StatefulWidget {
-  const Search({Key? key}) : super(key: key);
+  const Search({super.key});
 
   @override
-  _SearchState createState() => _SearchState();
+  State<Search> createState() => _SearchState();
 }
 
 class _SearchState extends State<Search> {
