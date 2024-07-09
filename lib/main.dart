@@ -1,19 +1,28 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 
+const apiKey = '1142a9567150c9e455cd4f5ba89953a6';
+
 void main() => runApp(const MyApp());
 
-  Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async {
-  const apiKey = '1142a9567150c9e455cd4f5ba89953a6';
-  // const cityName = 'Zitacuaro';
-  // const url =
-  //     'http://api.openweathermap.org/data/2.5/weather?q=$cityName&appid=$apiKey&units=metric';
-
+Future<Map<String, dynamic>> _getWeatherCurrent(double lat, double lon) async {
   final url =
       'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric';
+
+  final response = await http.get(Uri.parse(url));
+
+  if (response.statusCode == 200) {
+    return json.decode(response.body);
+  } else {
+    throw Exception('Error al cargar el clima');
+  }
+}
+
+Future<Map<String, dynamic>> getWeatherOfCity(String cityName) async {
+  final url =
+      'http://api.openweathermap.org/data/2.5/weather?q=$cityName&appid=$apiKey&units=metric';
 
   final response = await http.get(Uri.parse(url));
 
@@ -63,29 +72,25 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    _getCurrentLocation()
-        .then((data) => {
-              fetchWeather(data[0], data[1]).then((data) {
-                setState(() {
-                  weatherData = data;
-                  isLoading = false;
-                });
-              }).catchError((error) {
-                setState(() {
-                  isLoading = false;
-                });
-              })
-            })
-        .catchError((error) {
+    _getCurrentLocation().then((data) {
+      _getWeatherCurrent(data[0], data[1]).then((weatherData) {
+        setState(() {
+          this.weatherData = weatherData;
+          isLoading = false;
+        });
+      }).catchError((error) {
+        setState(() {
+          isLoading = false;
+        });
+      });
+    }).catchError((error) {
       setState(() {
         isLoading = false;
       });
     });
-
-    ;
   }
 
-    Future<List<double>> _getCurrentLocation() async {
+  Future<List<double>> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
     List<double> location = [];
@@ -122,7 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return location = [position.latitude, position.longitude];
   }
-
 
   @override
   Widget build(BuildContext context) {
