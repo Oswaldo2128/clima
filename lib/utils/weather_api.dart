@@ -65,3 +65,34 @@ Future<Map<String, dynamic>?> getWeatherOfCity(
   }
   return null;
 }
+
+Future<Map<String, dynamic>?> getWeatherForecast(
+    String lat, String lon, BuildContext context) async {
+  final url =
+      'https://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&cnt=5&appid=$apiKey';
+
+  final response = await http.get(Uri.parse(url));
+
+  if (response.statusCode == 200) {
+    return json.decode(response.body);
+  } else {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Alerta"),
+          content: const Text("Error, intente mas tarde"),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  return null;
+}
