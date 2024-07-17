@@ -10,10 +10,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: appTitle,
-      home: const MyHomePage(title: appTitle),
-      darkTheme: ThemeData.dark(),
+      home: MyHomePage(title: appTitle),
     );
   }
 }
