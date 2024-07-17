@@ -20,44 +20,48 @@ class _SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          const Text('Index 2: Search'),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 30.0),
-            child: TextFormField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                hintText: 'Ingresa el nombre de la ciudad',
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Search'),
+      ),
+      body: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 20.0, horizontal: 30.0),
+              child: TextFormField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  hintText: 'Ingresa el nombre de la ciudad',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor ingrese el nombre de la ciudad';
+                  }
+                  return null;
+                },
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingrese el nombre de la ciudad';
-                }
-                return null;
-              },
             ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
-            child: ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  print(_controller.text);
-                  Map<String, dynamic>? weather =
-                      await getWeatherOfCity(_controller.text);
-                  print(weather);
-                }
-              },
-              child: const Text('Buscar'),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    print(_controller.text);
+                    Map<String, dynamic>? weather =
+                        await getWeatherOfCity(_controller.text, context);
+                    print(weather);
+                  }
+                },
+                child: const Text('Buscar'),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
