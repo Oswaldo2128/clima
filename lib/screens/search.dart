@@ -58,76 +58,77 @@ class _SearchState extends State<Search> {
                   if (_formKey.currentState!.validate()) {
                     weatherData =
                         await getWeatherOfCity(_controller.text, context);
-                    if (weatherData != null) {
-                      desc = toBeginningOfSentenceCase(
-                          weatherData?['weather']?[0]['description']);
-                      flag = true;
-                    }
+                    setState(() {
+                      if (weatherData != null) {
+                        desc = toBeginningOfSentenceCase(
+                            weatherData?['weather']?[0]['description']);
+                        flag = true;
+                      } else {
+                        flag = false;
+                      }
+                    });
                   }
                 },
                 child: const Text('Buscar'),
               ),
             ),
-            Column(
-              children: [
-                flag
-                    ? const Text('Sin información')
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          const SizedBox(height: 5.0),
-                          Text(desc ?? 'Cargando...'),
-                          const SizedBox(height: 5.0),
-                          weatherData?['weather']?[0]['icon'] != null
-                              ? Image.network(
-                                  'https://openweathermap.org/img/wn/${weatherData?['weather'][0]['icon']}@2x.png')
-                              : const Text('Cargando...'),
-                          const SizedBox(height: 5.0),
-                          Text(
-                              '${weatherData?['main']['temp'] ?? 'Cargando...'} °C'),
-                          const SizedBox(height: 5.0),
-                          Text(
-                              'Sensación térmica: ${weatherData?['main']['feels_like'] ?? 'Cargando...'} °C'),
-                          const SizedBox(height: 5.0),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                  'Presión: ${weatherData?['main']['pressure'] ?? 'Cargando...'} hPa'),
-                              const SizedBox(width: 50.0),
-                              Text(
-                                  'Humedad: ${weatherData?['main']['humidity'] ?? 'Cargando...'} %'),
-                            ],
-                          ),
-                          const SizedBox(height: 5.0),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.remove_red_eye_outlined,
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                size: 30.0,
-                              ),
-                              const SizedBox(width: 5.0),
-                              Text(
-                                  '${weatherData?['visibility'] / 1000 ?? 'Cargando...'} km'),
-                              const SizedBox(width: 50.0),
-                              const Icon(
-                                Icons.speed,
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                size: 30.0,
-                              ),
-                              const SizedBox(width: 5.0),
-                              Text(
-                                  '${weatherData?['wind']['speed'] ?? 'Cargando...'} m/s'),
-                            ],
-                          ),
-                          const SizedBox(height: 5.0),
-                          Text(
-                              '${weatherData?['name'] ?? 'Cargando...'}, ${weatherData?['sys']['country'] ?? 'Cargando...'}'),
-                        ],
-                      ),
-              ],
+            Expanded(
+              child: !flag
+                  ? const Center(child: Text('Sin información'))
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Text(desc ?? 'Cargando...'),
+                        const SizedBox(height: 5.0),
+                        weatherData?['weather']?[0]['icon'] != null
+                            ? Image.network(
+                                'https://openweathermap.org/img/wn/${weatherData?['weather'][0]['icon']}@2x.png')
+                            : const Text('Cargando...'),
+                        const SizedBox(height: 5.0),
+                        Text(
+                            '${weatherData?['main']['temp'] ?? 'Cargando...'} °C'),
+                        const SizedBox(height: 5.0),
+                        Text(
+                            'Sensación térmica: ${weatherData?['main']['feels_like'] ?? 'Cargando...'} °C'),
+                        const SizedBox(height: 5.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                                'Presión: ${weatherData?['main']['pressure'] ?? 'Cargando...'} hPa'),
+                            const SizedBox(width: 50.0),
+                            Text(
+                                'Humedad: ${weatherData?['main']['humidity'] ?? 'Cargando...'} %'),
+                          ],
+                        ),
+                        const SizedBox(height: 5.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.remove_red_eye_outlined,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              size: 30.0,
+                            ),
+                            const SizedBox(width: 5.0),
+                            Text(
+                                '${weatherData?['visibility'] / 1000 ?? 'Cargando...'} km'),
+                            const SizedBox(width: 50.0),
+                            const Icon(
+                              Icons.speed,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              size: 30.0,
+                            ),
+                            const SizedBox(width: 5.0),
+                            Text(
+                                '${weatherData?['wind']['speed'] ?? 'Cargando...'} m/s'),
+                          ],
+                        ),
+                        const SizedBox(height: 5.0),
+                        Text(
+                            '${weatherData?['name'] ?? 'Cargando...'}, ${weatherData?['sys']['country'] ?? 'Cargando...'}'),
+                      ],
+                    ),
             )
           ],
         ),
