@@ -6,13 +6,14 @@ void main() => runApp(const MyApp());
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  static const appTitle = 'Clima';
+  static const appTitle = 'Weather app';
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: appTitle,
-      home: MyHomePage(title: appTitle),
+      home: const MyHomePage(title: appTitle),
+      darkTheme: ThemeData.dark(),
     );
   }
 }
