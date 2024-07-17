@@ -39,7 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
       List<double> data = await _getCurrentLocation();
       if (data.isNotEmpty) {
         Map<String, dynamic>? weather =
-            await getWeatherCurrent(data[0], data[1]);
+            await getWeatherCurrent(data[0], data[1], context);
         if (mounted) {
           setState(() {
             weatherData = weather;
@@ -96,7 +96,6 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         },
       );
-      throw Exception('El servicio de ubicación está deshabilitado.');
     }
 
     permission = await Geolocator.checkPermission();
@@ -120,7 +119,6 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           },
         );
-        throw Exception('Los permisos de ubicación están denegados.');
       }
     }
 
@@ -143,8 +141,6 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         },
       );
-      throw Exception(
-          'Los permisos de ubicación están denegados permanentemente.');
     }
 
     Position position = await Geolocator.getCurrentPosition(
