@@ -79,6 +79,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Alerta"),
+            content: const Text("El servicio de ubicación está deshabilitado."),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
       throw Exception('El servicio de ubicación está deshabilitado.');
     }
 
@@ -86,11 +103,46 @@ class _MyHomePageState extends State<MyHomePage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Alerta"),
+              content: const Text("Los permisos de ubicación están denegados."),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
         throw Exception('Los permisos de ubicación están denegados.');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Alerta"),
+            content: const Text(
+                "Los permisos de ubicación están denegados permanentemente."),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
       throw Exception(
           'Los permisos de ubicación están denegados permanentemente.');
     }
