@@ -9,11 +9,11 @@ class AppBarTitle extends StatelessWidget {
       children: <Widget>[
         Icon(
           Icons.cloud,
-          color: Color.fromARGB(255, 11, 98, 197),
+          color: Color.fromARGB(255, 255, 255, 255),
           size: 30.0,
         ),
-        SizedBox(width: 8),
-        Text('Clima'),
+        SizedBox(width: 20),
+        Text('Weather app'),
       ],
     );
   }
